@@ -4,3 +4,4 @@
 
 // 核心组件
 // Model
+console.log(1)
