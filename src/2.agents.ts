@@ -14,6 +14,7 @@ import {
   ToolMessage,
 } from "langchain";
 import z from "zod";
+import { MessagesValue, StateSchema } from "@langchain/langgraph";
 
 // 核心组件
 // Model
@@ -178,3 +179,72 @@ const handleToolError = createMiddleware({
 // });
 
 // name属性
+// 为代理设置可选的name属性，多代理系统中将代理添加为子图时，可用作节点标识符
+// const agent = createAgent({
+//   model: chatModel,
+//   tools: [search, get_weather],
+//   name: "chat",
+// });
+
+// invocation 调用
+// 可以通过向agent的state传递更新来调用
+// await agent.invoke({
+//   messages: [{ role: "user", content: "北京天气？" }],
+// });
+
+// 高级概念
+// structured output结构化输出
+// 使用responseFormat参数实现结构化输出
+
+// const ContactInfo = z.object({
+//   name: z.string(),
+//   email: z.string(),
+//   phone: z.string(),
+// });
+// const agent = createAgent({
+//   model: chatModel,
+//   responseFormat: ContactInfo,
+// });
+
+// const res = await agent.invoke({
+//   messages: [
+//     {
+//       role: "user",
+//       content: "解析下面的数据：张三,zhangsan@163.com,(555) 123-4567",
+//     },
+//   ],
+// });
+// console.log(res.structuredResponse);
+
+// Memory 记忆
+// agent会通过消息状态自动维护对话历史记录，存储在状态中的信息可以被视为智能体的短期记忆
+const CustomAgentState = new StateSchema({
+  messages: MessagesValue,
+  userPreferences: z.record(z.string(), z.string()),
+});
+
+const agent = createAgent({
+  model: chatModel,
+  tools: [search, get_weather],
+  stateSchema: CustomAgentState,
+});
+
+// Streaming 流媒体 -> 实时发送消息流
+// const stream = await agent.stream(
+//   {
+//     messages: [{ role: "user", content: "搜索最新的AI新闻" }],
+//   },
+//   { streamMode: "values" },
+// );
+// for await (const chunk of stream) {
+//   const latestMessage = chunk.messages.at(-1);
+//   if (latestMessage?.content) {
+//     console.log(`Agent: ${latestMessage.content}`);
+//   } else if (latestMessage?.tool_calls) {
+//     const tollCallNames = latestMessage.tool_calls.map((tc) => tc.name);
+//     console.log(`Calling tools: ${tollCallNames.join(", ")}`);
+//   }
+// }
+
+// middleware 中间件
+//
